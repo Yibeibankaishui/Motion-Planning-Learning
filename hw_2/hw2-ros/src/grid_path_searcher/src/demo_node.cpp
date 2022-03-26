@@ -167,6 +167,7 @@ int main(int argc, char** argv)
     nh.param("planning/start_y",  _start_pt(1),  0.0);
     nh.param("planning/start_z",  _start_pt(2),  0.0);
 
+    // map的坐标范围
     _map_lower << - _x_size/2.0, - _y_size/2.0,     0.0;
     _map_upper << + _x_size/2.0, + _y_size/2.0, _z_size;
     
@@ -196,6 +197,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
+// 可视化
 void visGridPath( vector<Vector3d> nodes, bool is_use_jps )
 {   
     visualization_msgs::Marker node_vis; 

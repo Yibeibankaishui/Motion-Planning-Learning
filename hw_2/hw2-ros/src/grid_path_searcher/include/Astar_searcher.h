@@ -2,11 +2,20 @@
 #define _ASTART_SEARCHER_H
 
 #include <iostream>
+#include <cmath>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <Eigen/Eigen>
 #include "backward.hpp"
 #include "node.h"
+
+
+enum HeuFunc {
+	Manhattan,
+	Euclidean,
+	Diagonal
+};
+
 
 class AstarPathFinder
 {	
@@ -26,7 +35,7 @@ class AstarPathFinder
 		GridNodePtr terminatePtr;
 		std::multimap<double, GridNodePtr> openSet;
 
-		double getHeu(GridNodePtr node1, GridNodePtr node2);
+		double getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu=Euclidean);
 		void AstarGetSucc(GridNodePtr currentPtr, std::vector<GridNodePtr> & neighborPtrSets, std::vector<double> & edgeCostSets);		
 
     	bool isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const;
@@ -35,6 +44,7 @@ class AstarPathFinder
 		bool isFree(const Eigen::Vector3i & index) const;
 		
 		Eigen::Vector3d gridIndex2coord(const Eigen::Vector3i & index);
+		// 坐标转化为索引
 		Eigen::Vector3i coord2gridIndex(const Eigen::Vector3d & pt);
 
 	public:
@@ -51,5 +61,7 @@ class AstarPathFinder
 		std::vector<Eigen::Vector3d> getPath();
 		std::vector<Eigen::Vector3d> getVisitedNodes();
 };
+
+
 
 #endif

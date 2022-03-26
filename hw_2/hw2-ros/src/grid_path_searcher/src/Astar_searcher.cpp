@@ -144,7 +144,9 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     */
 }
 
-double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
+
+// 启发函数
+double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu)
 {
     /* 
     choose possible heuristic function you want
@@ -158,8 +160,31 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     *
     */
+    double res = 0;
+    switch(heu){
+        case Manhattan:
+            // Manhattan
+            res = abs (node1 -> coord(0) - node2 -> coord(0)) + 
+            abs (node1 -> coord(1) - node2 -> coord(1)) + 
+            abs (node1 -> coord(2) - node2 -> coord(2));
+            break;
+        case Euclidean:
+            // Euclidean
+            res = sqrt( pow ( (node1 -> coord(0) - node2 -> coord(0)), 2) + 
+            pow ( (node1 -> coord(1) - node2 -> coord(1)), 2) + 
+            pow ( (node1 -> coord(2) - node2 -> coord(2)), 2) );
+            break;
+        case Diagonal:
+            // Diagonal Heuristic
+            break;
+        case default:
+            break;
+        
+    }
+    return res;
 
-    return 0;
+
+    
 }
 
 void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
@@ -199,6 +224,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     *
     *
     */
+    
+
     vector<GridNodePtr> neighborPtrSets;
     vector<double> edgeCostSets;
 
