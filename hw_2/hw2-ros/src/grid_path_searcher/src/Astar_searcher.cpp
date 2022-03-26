@@ -131,6 +131,7 @@ inline bool AstarPathFinder::isFree(const int & idx_x, const int & idx_y, const 
            (data[idx_x * GLYZ_SIZE + idx_y * GLZ_SIZE + idx_z] < 1));
 }
 
+// 获取后继点，加入后继点集合
 inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNodePtr> & neighborPtrSets, vector<double> & edgeCostSets)
 {   
     neighborPtrSets.clear();
@@ -142,6 +143,9 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     *
     *
     */
+    // 对A*，即为邻点，3维共26个
+    neighborPtrSets.push_back();
+    
 }
 
 
@@ -224,9 +228,11 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     *
     *
     */
-    
+    // 应该定义一个 close set
+    vector<GridNodePtr> closeSet;
 
     vector<GridNodePtr> neighborPtrSets;
+    // 可能用来记录邻点间的距离（代价）
     vector<double> edgeCostSets;
 
     // this is the main loop
@@ -242,6 +248,9 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *
         *
         */
+        // 最小的在最开始
+        openSet.erase( openSet.begin()); 
+        current_ptr = 
 
         // if the current node is the goal 
         if( currentPtr->index == goalIdx ){
@@ -298,6 +307,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+
                 continue;
             }
         }      
