@@ -146,7 +146,7 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     int cur_x = currentPtr -> index(0);
     int cur_y = currentPtr -> index(1);
     int cur_z = currentPtr -> index(2);
-    GirdNodePtr neighborPtr;
+    GridNodePtr neighborPtr;
     // 对A*，即为邻点，3维共26个
     for (int i = cur_x - 1; i <= cur_x + 1; i++){
         for (int j = cur_y - 1; j <= cur_y + 1; j++){
@@ -193,7 +193,7 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu
             pow ( (node1 -> coord(1) - node2 -> coord(1)), 2) + 
             pow ( (node1 -> coord(2) - node2 -> coord(2)), 2) );
             break;
-        case Diagonal:
+        case DiagonalHeu:
             // Diagonal Heuristic
             break;
         case default:
@@ -264,8 +264,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *
         */
         // 最小的在最开始
-        current_ptr = openSet.begin();
-        current_ptr -> id = -1;
+        currentPtr = openSet.begin();
+        currentPtr -> id = -1;
         openSet.erase( openSet.begin() ); 
         closeSet.push_back( current_ptr );
 
