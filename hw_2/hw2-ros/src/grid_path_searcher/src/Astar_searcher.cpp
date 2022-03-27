@@ -151,8 +151,8 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     for (int i = cur_x - 1; i <= cur_x + 1; i++){
         for (int j = cur_y - 1; j <= cur_y + 1; j++){
             for (int k = cur_z - 1; k <= cur_z + 1; k++){
-                neighborPtr = GirdNodeMap[i][j][k];
-                if (isFree(neighborPtr) && (neighborPtr != currentPtr) ){
+                neighborPtr = GridNodeMap[i][j][k];
+                if (isFree(neighborPtr -> index) && (neighborPtr != currentPtr) ){
                     // neighborPtr -> cameFrom = currentPtr;
                     neighborPtrSets.push_back( neighborPtr );
                     edgeCostSets.push_back( sqrt( abs(cur_x - i) + abs(cur_y - j) + abs(cur_z - k)) );
