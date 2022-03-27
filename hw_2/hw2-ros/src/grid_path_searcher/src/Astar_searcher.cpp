@@ -361,8 +361,8 @@ vector<Vector3d> AstarPathFinder::getPath()
     please write your code below
     *      
     */
-    GirdNodePtr prevPtr = terminatePtr;
-    whilt (prevPtr != NULL){
+    GridNodePtr prevPtr = terminatePtr;
+    while (prevPtr != NULL){
         gridPath.push_back(prevPtr);
         prevPtr = prevPtr -> cameFrom;
     }
