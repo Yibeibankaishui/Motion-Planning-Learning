@@ -74,8 +74,8 @@ vector<Vector3d> AstarPathFinder::getVisitedNodes()
     for(int i = 0; i < GLX_SIZE; i++)
         for(int j = 0; j < GLY_SIZE; j++)
             for(int k = 0; k < GLZ_SIZE; k++){   
-                //if(GridNodeMap[i][j][k]->id != 0) // visualize all nodes in open and close list
-                if(GridNodeMap[i][j][k]->id == -1)  // visualize nodes in close list only
+                if(GridNodeMap[i][j][k]->id != 0) // visualize all nodes in open and close list
+                // if(GridNodeMap[i][j][k]->id == -1)  // visualize nodes in close list only
                     visited_nodes.push_back(GridNodeMap[i][j][k]->coord);
             }
 
@@ -151,11 +151,13 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     for (int i = cur_x - 1; i <= cur_x + 1; i++){
         for (int j = cur_y - 1; j <= cur_y + 1; j++){
             for (int k = cur_z - 1; k <= cur_z + 1; k++){
-                neighborPtr = GridNodeMap[i][j][k];
-                if (isFree(neighborPtr -> index) && (neighborPtr != currentPtr) ){
+                if (isFree(i, j, k)){
+                    neighborPtr = GridNodeMap[i][j][k];
+                }
+                if ( neighborPtr != currentPtr ){
                     // neighborPtr -> cameFrom = currentPtr;
                     neighborPtrSets.push_back( neighborPtr );
-                    edgeCostSets.push_back( sqrt( abs(cur_x - i) + abs(cur_y - j) + abs(cur_z - k)) );
+                    edgeCostSets.push_back( sqrt( abs(cur_x - i) + abs(cur_y - j) + abs(cur_z - k) ) );
                 }
             }
         }
@@ -210,6 +212,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
 {   
     ros::Time time_1 = ros::Time::now();    
 
+    resetUsedGrids();
     //index of start_point and end_point
     Vector3i start_idx = coord2gridIndex(start_pt);
     Vector3i end_idx   = coord2gridIndex(end_pt);
@@ -277,6 +280,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
             return;
         }
         //get the succetion
+
         AstarGetSucc(currentPtr, neighborPtrSets, edgeCostSets);  //STEP 4: finish AstarPathFinder::AstarGetSucc yourself     
 
         /*
@@ -326,10 +330,12 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 *        
                 */
                 if ( currentPtr -> gScore + edgeCostSets[i] < neighborPtr -> gScore){
+                    double key = neighborPtr -> gScore + neighborPtr -> fScore;
                     neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
                     neighborPtr -> cameFrom = currentPtr;
+                    openSet.erase( key );
+                    openSet.insert( make_pair(neighborPtr -> gScore + neighborPtr -> fScore, neighborPtr) );
                 }
-
                 continue;
             }
             else{//this node is in closed set
@@ -366,8 +372,11 @@ vector<Vector3d> AstarPathFinder::getPath()
         gridPath.push_back(prevPtr);
         prevPtr = prevPtr -> cameFrom;
     }
-    for (auto ptr: gridPath)
+    for (auto ptr: gridPath){
+
+        ROS_INFO("[%f  ,  %f  ,  %f]", ptr->coord(0), ptr->coord(1), ptr->coord(2));
         path.push_back(ptr->coord);
+    }
         
     reverse(path.begin(),path.end());
 
