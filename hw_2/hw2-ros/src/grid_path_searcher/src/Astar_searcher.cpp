@@ -196,7 +196,7 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu
         case DiagonalHeu:
             // Diagonal Heuristic
             break;
-        case default:
+        default:
             break;
         
     }
@@ -264,10 +264,10 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *
         */
         // 最小的在最开始
-        currentPtr = openSet.begin();
+        currentPtr = openSet.begin() -> second;
         currentPtr -> id = -1;
         openSet.erase( openSet.begin() ); 
-        closeSet.push_back( current_ptr );
+        closeSet.push_back( currentPtr );
 
         // if the current node is the goal 
         if( currentPtr->index == goalIdx ){
