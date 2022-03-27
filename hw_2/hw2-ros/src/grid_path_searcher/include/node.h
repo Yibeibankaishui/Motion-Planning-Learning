@@ -13,7 +13,7 @@ typedef GridNode* GridNodePtr;
 
 struct GridNode
 {     
-    int id;        // 1--> open set, -1 --> closed set
+    int id;        // 1--> open set, -1 --> closed set, 0 --> neither open nor close set
     Eigen::Vector3d coord; 
     Eigen::Vector3i dir;   // direction of expanding
     Eigen::Vector3i index;

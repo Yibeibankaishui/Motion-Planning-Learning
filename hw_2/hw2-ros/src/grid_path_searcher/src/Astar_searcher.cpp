@@ -145,6 +145,7 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     */
     // 对A*，即为邻点，3维共26个
     neighborPtrSets.push_back();
+    edgeCostSets.push_back();
     
 }
 
@@ -249,8 +250,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *
         */
         // 最小的在最开始
-        openSet.erase( openSet.begin()); 
-        current_ptr = 
+        current_ptr = openSet.begin();
+        openSet.erase( openSet.begin() ); 
 
         // if the current node is the goal 
         if( currentPtr->index == goalIdx ){
