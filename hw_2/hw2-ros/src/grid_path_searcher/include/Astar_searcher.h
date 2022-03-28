@@ -13,7 +13,7 @@
 enum HeuFunc {
 	Manhattan,
 	Euclidean,
-	Diagonal,
+	DiagonalHeu,
 	Dijkstra
 };
 
