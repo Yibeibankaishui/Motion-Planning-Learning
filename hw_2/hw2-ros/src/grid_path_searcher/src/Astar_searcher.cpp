@@ -154,6 +154,7 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
                 if (isFree(i, j, k)){
                     neighborPtr = GridNodeMap[i][j][k];
                 }
+                else continue;
                 if ( neighborPtr != currentPtr ){
                     // neighborPtr -> cameFrom = currentPtr;
                     neighborPtrSets.push_back( neighborPtr );
@@ -369,12 +370,15 @@ vector<Vector3d> AstarPathFinder::getPath()
     */
     GridNodePtr prevPtr = terminatePtr;
     while (prevPtr != NULL){
+        ROS_INFO("[%f , %f , %f]  (%d, %d, %d)", prevPtr->coord(0), prevPtr->coord(1), prevPtr->coord(2), 
+                    prevPtr->index(0), prevPtr->index(1), prevPtr->index(2));
         gridPath.push_back(prevPtr);
         prevPtr = prevPtr -> cameFrom;
+        
     }
     for (auto ptr: gridPath){
 
-        ROS_INFO("[%f  ,  %f  ,  %f]", ptr->coord(0), ptr->coord(1), ptr->coord(2));
+        
         path.push_back(ptr->coord);
     }
         
