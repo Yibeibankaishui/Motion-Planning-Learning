@@ -198,6 +198,14 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu
             break;
         case DiagonalHeu:
             // Diagonal Heuristic
+            double dx = abs (node1 -> coord(0) - node2 -> coord(0));
+            double dy = abs (node1 -> coord(1) - node2 -> coord(1));
+            double dz = abs (node1 -> coord(2) - node2 -> coord(2));
+            double dmin = min (dx, dy, dz);
+            double dmax = max (dx, dy, dz);
+            double dmid = dx + dy + dz - dmin - dmax;
+
+            res = (1.7321 - 1.4142) * dmin + (1.4142 - 1) * dmid + dmax;
             break;
         default:
             break;
