@@ -10,7 +10,7 @@
 #include "backward.hpp"
 #include "node.h"
 
-#define _use_tie_breaker 1
+#define _use_tie_breaker 0
 
 
 enum HeuFunc {
