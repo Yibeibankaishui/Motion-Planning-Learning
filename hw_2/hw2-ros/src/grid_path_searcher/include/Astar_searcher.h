@@ -19,6 +19,23 @@ enum HeuFunc {
 };
 
 
+struct HeuValue{
+	int gValue;
+	int hValue;
+	int fValue;
+
+	HeuValue(){}
+	HeuValue(int g, int h) : gValue(g), hValue(h) {fValue = g + h;}
+};
+
+struct Cmp{
+	bool operator () (const HeuValue & a, const HeuValue & b) const{
+		if ((a.fValue) != (b.fValue)) {return a.fValue < b.fValue;}
+		else return a.hValue < b.hValue;
+	}
+};
+
+
 class AstarPathFinder
 {	
 	private:
