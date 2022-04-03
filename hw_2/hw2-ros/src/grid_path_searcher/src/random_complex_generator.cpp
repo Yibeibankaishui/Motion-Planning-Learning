@@ -15,6 +15,7 @@
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Eigen>
 #include <math.h>
+#include <string>
 #include <random>
 
 using namespace std;
@@ -34,6 +35,29 @@ pcl::PointCloud<pcl::PointXYZ> cloudMap;
 pcl::search::KdTree<pcl::PointXYZ> kdtreeMap;
 vector<int>     pointIdxSearch;
 vector<float>   pointSquaredDistance;      
+
+void LoadMapFromFile()
+{
+   
+   string filename = "/home/lab600701/bai_ws/saved_map.pcd";
+   // pcl::PointCloud<pcl::PointXYZ> cloud;
+   pcl::io::loadPCDFile("/home/lab600701/bai_ws/saved_map.pcd", cloudMap);
+
+   // bool is_kdtree_empty = false;
+   // if(cloudMap.points.size() > 0)
+   //    kdtreeMap.setInputCloud( cloudMap.makeShared() ); 
+   // else
+   //    is_kdtree_empty = true;
+   ROS_INFO("load pcd from file");
+   // cloudMap.width = cloudMap.points.size();
+   // cloudMap.height = 1;
+   // cloudMap.is_dense = true;
+   // ROS_INFO("%d", cloudMap.width);
+   pcl::toROSMsg(cloudMap, globalMap_pcd);
+  
+   globalMap_pcd.header.frame_id = "world";
+   _has_map = true;
+}
 
 void RandomMapGenerate()
 {  
@@ -177,6 +201,18 @@ void RandomMapGenerate()
 
    _has_map = true;
    
+   // save the pcl map
+   ROS_INFO("SAVING MAP");
+   // FILE* tempfile = fopen("/home/lab600701/bai_ws/saved_map.pcd", "w+");
+   // if (tempfile == nullptr){
+   //    cout << "no permission!" << endl;
+   //    return;
+   // }
+   // ROS_INFO("permission checked");
+   // fclose(tempfile);
+   // remove("/home/lab600701/bai_ws/saved_map.pcd");
+   pcl::io::savePCDFileASCII("/home/lab600701/bai_ws/saved_map.pcd", cloudMap);
+
    pcl::toROSMsg(cloudMap, globalMap_pcd);
    globalMap_pcd.header.frame_id = "world";
 }
@@ -222,7 +258,10 @@ int main (int argc, char** argv)
    _y_l = - _y_size / 2.0;
    _y_h = + _y_size / 2.0;
 
-   RandomMapGenerate();
+   // generate a new map
+   // Or load an old map
+   // RandomMapGenerate();
+   LoadMapFromFile();
    ros::Rate loop_rate(_sense_rate);
    while (ros::ok())
    {

@@ -66,7 +66,7 @@ void rcvWaypointsCallback(const nav_msgs::Path & wp)
 
 void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map)
 {   
-    if(_has_map ) return;
+    // if(_has_map ) return;
 
     pcl::PointCloud<pcl::PointXYZ> cloud;
     pcl::PointCloud<pcl::PointXYZ> cloud_vis;

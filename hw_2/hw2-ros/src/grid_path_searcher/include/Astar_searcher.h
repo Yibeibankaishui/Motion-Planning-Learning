@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <Eigen/Eigen>
@@ -36,7 +37,7 @@ class AstarPathFinder
 		GridNodePtr terminatePtr;
 		std::multimap<double, GridNodePtr> openSet;
 
-		double getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu=Euclidean);
+		double getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu=DiagonalHeu);
 		void AstarGetSucc(GridNodePtr currentPtr, std::vector<GridNodePtr> & neighborPtrSets, std::vector<double> & edgeCostSets);		
 
     	bool isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const;
