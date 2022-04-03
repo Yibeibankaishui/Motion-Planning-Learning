@@ -22,16 +22,20 @@ enum HeuFunc {
 
 
 struct HeuValue{
-	int gValue;
-	int hValue;
-	int fValue;
+	double gValue;
+	double hValue;
+	double fValue;
 
 	HeuValue(){}
-	HeuValue(int g, int h) : gValue(g), hValue(h) {fValue = g + h;}
+	HeuValue(double g, double h) : gValue(g), hValue(h) {fValue = g + h;}
 	HeuValue(const GridNodePtr & node){
 		gValue = node -> gScore;
 		hValue = node -> fScore;
 		fValue = gValue + hValue;
+	}
+
+	bool operator== (HeuValue & rhs) const{
+		return ( (gValue == rhs.gValue) && (fValue == rhs.fValue) );
 	}
 };
 
@@ -65,7 +69,7 @@ class AstarPathFinder
 #else
 		std::multimap<double, GridNodePtr> openSet;
 #endif
-		double getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu=DiagonalHeu);
+		double getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu=Euclidean);
 		void AstarGetSucc(GridNodePtr currentPtr, std::vector<GridNodePtr> & neighborPtrSets, std::vector<double> & edgeCostSets);		
 
     	bool isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const;

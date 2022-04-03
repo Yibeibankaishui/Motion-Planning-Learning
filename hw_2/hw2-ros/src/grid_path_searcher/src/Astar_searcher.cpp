@@ -143,9 +143,9 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     *
     *
     */
-    int cur_x = currentPtr -> index(0);
-    int cur_y = currentPtr -> index(1);
-    int cur_z = currentPtr -> index(2);
+    double cur_x = currentPtr -> index(0);
+    double cur_y = currentPtr -> index(1);
+    double cur_z = currentPtr -> index(2);
     GridNodePtr neighborPtr;
     // 对A*，即为邻点，3维共26个
     for (int i = cur_x - 1; i <= cur_x + 1; i++){
@@ -217,8 +217,6 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu
         
     }
     return res;
-
-
     
 }
 
@@ -288,9 +286,11 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         */
         // 最小的在最开始
         currentPtr = openSet.begin() -> second;
+        // ROS_INFO("g: %f, h: %f, f: %f", openSet.begin() -> first.gValue, openSet.begin() -> first.hValue, openSet.begin() -> first.fValue);
         currentPtr -> id = -1;
         openSet.erase( openSet.begin() ); 
         closeSet.push_back( currentPtr );
+       
 
         // if the current node is the goal 
         if( currentPtr->index == goalIdx ){

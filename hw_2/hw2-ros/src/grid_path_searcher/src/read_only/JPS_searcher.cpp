@@ -177,7 +177,11 @@ void JPSPathFinder::JPSGraphSearch(Eigen::Vector3d start_pt, Eigen::Vector3d end
     //STEP 1: finish the AstarPathFinder::getHeu , which is the heuristic function
     startPtr -> id = 1; 
     startPtr -> coord = start_pt;
+#if _use_tie_breaker
+
+#else
     openSet.insert( make_pair(startPtr -> fScore, startPtr) );
+#endif
     /*
     *
     STEP 2 :  some else preparatory works which should be done before while loop
