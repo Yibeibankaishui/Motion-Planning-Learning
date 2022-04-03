@@ -107,20 +107,6 @@ void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map)
 
 void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
 {
-    //Call A* to search for a path
-    _astar_path_finder->AstarGraphSearch(start_pt, target_pt);
-
-    //Retrieve the path
-    auto grid_path     = _astar_path_finder->getPath();
-    auto visited_nodes = _astar_path_finder->getVisitedNodes();
-
-    //Visualize the result
-    visGridPath (grid_path, false);
-    visVisitedNode(visited_nodes);
-
-    //Reset map for next call
-    _astar_path_finder->resetUsedGrids();
-
     //_use_jps = 0 -> Do not use JPS
     //_use_jps = 1 -> Use JPS
     //you just need to change the #define value of _use_jps
@@ -141,6 +127,20 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
         //Reset map for next call
         _jps_path_finder->resetUsedGrids();
     }
+#else
+    //Call A* to search for a path
+    _astar_path_finder->AstarGraphSearch(start_pt, target_pt);
+
+    //Retrieve the path
+    auto grid_path     = _astar_path_finder->getPath();
+    auto visited_nodes = _astar_path_finder->getVisitedNodes();
+
+    //Visualize the result
+    visGridPath (grid_path, false);
+    visVisitedNode(visited_nodes);
+
+    //Reset map for next call
+    _astar_path_finder->resetUsedGrids();
 #endif
 }
 
@@ -221,8 +221,8 @@ void visGridPath( vector<Vector3d> nodes, bool is_use_jps )
     if(is_use_jps){
         node_vis.color.a = 1.0;
         node_vis.color.r = 1.0;
-        node_vis.color.g = 0.0;
-        node_vis.color.b = 0.0;
+        node_vis.color.g = 1.0;
+        node_vis.color.b = 1.0;
     }
     else{
         node_vis.color.a = 1.0;

@@ -212,7 +212,7 @@ void JPSPathFinder::JPSGraphSearch(Eigen::Vector3d start_pt, Eigen::Vector3d end
         // ROS_INFO("g: %f, h: %f, f: %f", openSet.begin() -> first.gValue, openSet.begin() -> first.hValue, openSet.begin() -> first.fValue);
         currentPtr -> id = -1;
         openSet.erase( openSet.begin() ); 
-        closeSet.push_back( currentPtr );
+        // closeSet.push_back( currentPtr );
 
         // if the current node is the goal 
         if( currentPtr->index == goalIdx ){
@@ -253,6 +253,7 @@ void JPSPathFinder::JPSGraphSearch(Eigen::Vector3d start_pt, Eigen::Vector3d end
                 please write your code below
                 *        
                 */
+                if(neighborPtr -> id == 0) {
                 neighborPtr -> gScore = tentative_gScore;
                 neighborPtr -> fScore = getHeu(neighborPtr, endPtr);
 
@@ -263,7 +264,9 @@ void JPSPathFinder::JPSGraphSearch(Eigen::Vector3d start_pt, Eigen::Vector3d end
                 openSet.insert( make_pair(hvalue, neighborPtr));
 #else
                 openSet.insert( make_pair(neighborPtr -> gScore + neighborPtr -> fScore, neighborPtr) );
-#endif                
+#endif           
+                }
+     
                 continue;
             }
             else if(tentative_gScore <= neighborPtr-> gScore){ //in open set and need update
