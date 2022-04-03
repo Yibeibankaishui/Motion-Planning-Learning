@@ -252,7 +252,13 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     //STEP 1: finish the AstarPathFinder::getHeu , which is the heuristic function
     startPtr -> id = 1; 
     startPtr -> coord = start_pt;
+#if _use_tie_breaker
+    HeuValue hvalue(startPtr);
+    openSet.insert( make_pair(hvalue, startPtr));
+#else
     openSet.insert( make_pair(startPtr -> fScore, startPtr) );
+#endif
+
     /*
     *
     STEP 2 :  some else preparatory works which should be done before while loop
@@ -331,7 +337,12 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
 
                 neighborPtr -> id = 1;
                 neighborPtr -> cameFrom = currentPtr;
+#if _use_tie_breaker
+                HeuValue hvalue(neighborPtr);
+                openSet.insert( make_pair(hvalue, neighborPtr));
+#else
                 openSet.insert( make_pair(neighborPtr -> gScore + neighborPtr -> fScore, neighborPtr) );
+#endif
 
                 continue;
             }
@@ -344,11 +355,20 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 *        
                 */
                 if ( currentPtr -> gScore + edgeCostSets[i] < neighborPtr -> gScore){
+#if _use_tie_breaker
+                    HeuValue key(neighborPtr);
+#else
                     double key = neighborPtr -> gScore + neighborPtr -> fScore;
+#endif
                     neighborPtr -> gScore = currentPtr -> gScore + edgeCostSets[i];
                     neighborPtr -> cameFrom = currentPtr;
                     openSet.erase( key );
+#if _use_tie_breaker
+                    HeuValue hvalue(neighborPtr);
+                    openSet.insert( make_pair(hvalue, neighborPtr));
+#else
                     openSet.insert( make_pair(neighborPtr -> gScore + neighborPtr -> fScore, neighborPtr) );
+#endif
                 }
                 continue;
             }

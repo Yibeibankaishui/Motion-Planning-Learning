@@ -10,6 +10,8 @@
 #include "backward.hpp"
 #include "node.h"
 
+#define _use_tie_breaker 1
+
 
 enum HeuFunc {
 	Manhattan,
@@ -26,6 +28,11 @@ struct HeuValue{
 
 	HeuValue(){}
 	HeuValue(int g, int h) : gValue(g), hValue(h) {fValue = g + h;}
+	HeuValue(const GridNodePtr & node){
+		gValue = node -> gScore;
+		hValue = node -> fScore;
+		fValue = gValue + hValue;
+	}
 };
 
 struct Cmp{
@@ -52,8 +59,12 @@ class AstarPathFinder
 		double gl_xu, gl_yu, gl_zu;
 
 		GridNodePtr terminatePtr;
-		std::multimap<double, GridNodePtr> openSet;
 
+#if _use_tie_breaker
+		std::multimap<HeuValue, GridNodePtr, Cmp> openSet;
+#else
+		std::multimap<double, GridNodePtr> openSet;
+#endif
 		double getHeu(GridNodePtr node1, GridNodePtr node2, HeuFunc heu=DiagonalHeu);
 		void AstarGetSucc(GridNodePtr currentPtr, std::vector<GridNodePtr> & neighborPtrSets, std::vector<double> & edgeCostSets);		
 
