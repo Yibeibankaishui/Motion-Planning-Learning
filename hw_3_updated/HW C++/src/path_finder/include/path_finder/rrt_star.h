@@ -298,7 +298,7 @@ namespace path_plan
         {
 #ifdef USE_RRT_STAR
 
-          if (map_ptr_->isSegmentValid(curr_node->x, x_new)){
+          if (!map_ptr_->isSegmentValid(curr_node->x, x_new)){
             checkVec.push_back(false);
             continue;
           }
