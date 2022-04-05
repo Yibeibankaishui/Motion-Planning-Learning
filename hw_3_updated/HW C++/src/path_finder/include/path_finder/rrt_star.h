@@ -30,6 +30,7 @@ OF SUCH DAMAGE.
 #include <ros/ros.h>
 #include <utility>
 #include <queue>
+#include <algorithm>
 
 #define USE_RRT_STAR 1
 
@@ -291,12 +292,21 @@ namespace path_plan
         // !  4. [Optional] You can sort the potential parents first in increasing order by cost-from-start value;
         // !  5. [Optional] You can store the collison-checking results for later usage in the Rewire procedure.
         // ! Implement your own code inside the following loop
+        vector<bool> checkVec;
+        sort(neighbour_nodes.begin(), neighbour_nodes.end(), [](const RRTNode3DPtr & node1, const RRTNode3DPtr & node2){return node1->cost_from_start < node2->cost_from_start;});
         for (auto &curr_node : neighbour_nodes)
         {
 #ifdef USE_RRT_STAR
-          if (map_ptr_->isSegmentValid(curr_node->x, x_new))
+
+          if (map_ptr_->isSegmentValid(curr_node->x, x_new)){
+            checkVec.push_back(false);
             continue;
+          }
+          else{
+            checkVec.push_back(true);
+          }
           dist2nearest = calDist(curr_node->x, x_new); 
+
           if (curr_node->cost_from_start + dist2nearest < min_dist_from_start){
             min_node = curr_node;
             cost_from_p = dist2nearest;
@@ -345,13 +355,14 @@ namespace path_plan
         // !  3. the variable [new_node] is the pointer of X_new;
         // !  4. [Optional] You can test whether the node is promising before checking edge collison.
         // ! Implement your own code between the dash lines [--------------] in the following loop
+        int index_check = 0;  
         for (auto &curr_node : neighbour_nodes)
         {
           double best_cost_before_rewire = goal_node_->cost_from_start;
           // ! -------------------------------------
 #ifdef USE_RRT_STAR
           dist2nearest = calDist(curr_node->x, x_new); 
-          if ((map_ptr_->isSegmentValid(curr_node->x, x_new)) && (new_node->cost_from_start + dist2nearest < curr_node->cost_from_start)){
+          if ((checkVec[index_check]) && (new_node->cost_from_start + dist2nearest < curr_node->cost_from_start)){
             changeNodeParent(curr_node, new_node, dist2nearest);
           }
 #endif
@@ -363,6 +374,7 @@ namespace path_plan
             path_list_.emplace_back(curr_best_path);
             solution_cost_time_pair_list_.emplace_back(goal_node_->cost_from_start, (ros::Time::now() - rrt_start_time).toSec());
           }
+          index_check++;
         }
         /* end of rewire */
       }
