@@ -31,6 +31,8 @@ OF SUCH DAMAGE.
 #include <utility>
 #include <queue>
 
+#define USE_RRT_STAR 1
+
 namespace path_plan
 {
   class RRTStar
@@ -148,6 +150,7 @@ namespace path_plan
       return (p1 - p2).norm();
     }
 
+    // generate new node between two nodes with step size
     Eigen::Vector3d steer(const Eigen::Vector3d &nearest_node_p, const Eigen::Vector3d &rand_node_p, double len)
     {
       Eigen::Vector3d diff_vec = rand_node_p - nearest_node_p;
@@ -215,6 +218,7 @@ namespace path_plan
       bool goal_found = false;
 
       /* kd tree init */
+      // 3-d Kd tree
       kdtree *kd_tree = kd_create(3);
       //Add start and goal nodes to kd tree
       kd_insert3(kd_tree, start_node_->x[0], start_node_->x[1], start_node_->x[2], start_node_);
@@ -223,6 +227,7 @@ namespace path_plan
       int idx = 0;
       for (idx = 0; (ros::Time::now() - rrt_start_time).toSec() < search_time_ && valid_tree_node_nums_ < max_tree_node_nums_; ++idx)
       {
+        // SAMPLE for a random node
         /* biased random sampling */
         Eigen::Vector3d x_rand;
         sampler_.samplingOnce(x_rand);
@@ -232,15 +237,18 @@ namespace path_plan
           continue;
         }
 
+        // FIND a nearest node of the previous random one in kd tree
         struct kdres *p_nearest = kd_nearest3(kd_tree, x_rand[0], x_rand[1], x_rand[2]);
         if (p_nearest == nullptr)
         {
           ROS_ERROR("nearest query error");
           continue;
         }
+        // get the data of the nearset node using pointer
         RRTNode3DPtr nearest_node = (RRTNode3DPtr)kd_res_item_data(p_nearest);
         kd_res_free(p_nearest);
 
+        // GENERATE new node between the near and the random with steer length
         Eigen::Vector3d x_new = steer(nearest_node->x, x_rand, steer_length_);
         if (!map_ptr_->isSegmentValid(nearest_node->x, x_new))
         {
@@ -251,6 +259,8 @@ namespace path_plan
         /* kd_tree bounds search for parent */
         vector<RRTNode3DPtr> neighbour_nodes;
         struct kdres *nbr_set;
+
+        // SEARCH for nearest nodes with a specific radius
         nbr_set = kd_nearest_range3(kd_tree, x_new[0], x_new[1], x_new[2], search_radius_);
         if (nbr_set == nullptr)
         {
@@ -283,6 +293,16 @@ namespace path_plan
         // ! Implement your own code inside the following loop
         for (auto &curr_node : neighbour_nodes)
         {
+#ifdef USE_RRT_STAR
+          if (map_ptr_->isSegmentValid(curr_node->x, x_new))
+            continue;
+          dist2nearest = calDist(curr_node->x, x_new); 
+          if (curr_node->cost_from_start + dist2nearest < min_dist_from_start){
+            min_node = curr_node;
+            cost_from_p = dist2nearest;
+            min_dist_from_start = curr_node->cost_from_start + dist2nearest;
+          } 
+#endif
         }
         // ! Implement your own code inside the above loop
 
@@ -329,7 +349,12 @@ namespace path_plan
         {
           double best_cost_before_rewire = goal_node_->cost_from_start;
           // ! -------------------------------------
-
+#ifdef USE_RRT_STAR
+          dist2nearest = calDist(curr_node->x, x_new); 
+          if ((map_ptr_->isSegmentValid(curr_node->x, x_new)) && (new_node->cost_from_start + dist2nearest < curr_node->cost_from_start)){
+            changeNodeParent(curr_node, new_node, dist2nearest);
+          }
+#endif
           // ! -------------------------------------
           if (best_cost_before_rewire > goal_node_->cost_from_start)
           {
