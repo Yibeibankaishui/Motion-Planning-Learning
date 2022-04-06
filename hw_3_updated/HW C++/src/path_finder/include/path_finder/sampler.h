@@ -23,6 +23,7 @@ OF SUCH DAMAGE.
 
 #include <ros/ros.h>
 #include <Eigen/Eigen>
+#include <Eigen/Geometry>
 #include <random>
 
 class BiasSampler
@@ -49,6 +50,7 @@ public:
     sample[0] = uniform_rand_(gen_);
     sample[1] = uniform_rand_(gen_);
     sample[2] = uniform_rand_(gen_);
+    // range : the range of the whole map
     sample.array() *= range_.array();
     sample += origin_;
   };
@@ -59,11 +61,42 @@ public:
     return uniform_rand_(gen_);
   }
 
-private:
+protected:
   Eigen::Vector3d range_, origin_;
   std::mt19937_64 gen_;
   std::uniform_real_distribution<double> uniform_rand_;
   std::normal_distribution<double> normal_rand_;
+};
+
+class InformedSampler : public BiasSampler
+{
+public:
+  InformedSampler(const Eigen::Vector3d & start_pt, const Eigen::Vector3d & goal_pt): BiasSampler()
+  {
+    centre = (start_pt + goal_pt) * 0.5;
+  };
+
+  void samplingInformed(Eigen::Vector3d &sample, const Eigen::Vector3d & start_point, const Eigen::Vector3d & goal_point, double dist_start_goal, double length_curr_path)
+  {
+    Eigen::Vector3d 
+    Eigen::Vector3d
+    Matrix3d rotation_matrix;
+    rotation_matrix = 
+    // given node_start, node_goal, path_length
+
+    // sample in a sphere set at origin
+
+    // apply transform
+
+    
+  }
+
+private:
+  Eigen::Vector3d centre_;
+  Eigen::Matrix3d rotation_matrix_;
+  double radius_l_;
+  double radius_s_;
+ 
 };
 
 #endif
