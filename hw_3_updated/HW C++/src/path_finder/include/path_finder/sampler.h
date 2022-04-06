@@ -25,6 +25,7 @@ OF SUCH DAMAGE.
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 #include <random>
+#include <cmath>
 
 class BiasSampler
 {
@@ -73,21 +74,38 @@ class InformedSampler : public BiasSampler
 public:
   InformedSampler(const Eigen::Vector3d & start_pt, const Eigen::Vector3d & goal_pt): BiasSampler()
   {
-    centre = (start_pt + goal_pt) * 0.5;
+    Eigen::Matrix<double, 1, 3> eZ_T;
+    eZ_T << 0, 1, 0;
+    centre_ = (start_pt + goal_pt) * 0.5;
+    Eigen::Vector3d direction;
+    direction = goal_pt - start_pt;
+    dist_start_goal_ = direction.norm();
+    direction = direction * (1 / dist_start_goal_);
+    rotation_matrix_ = direction * eZ_T;
+    radius_l_ = 4*dist_start_goal_;
+    radius_s_ = 4*dist_start_goal_;
+    range_ << radius_s_, radius_l_, radius_s_;
+    origin_ = centre_;
+
   };
+
+  // update the long and the short radius
+  void updateRadius(double curr_best_length)
+  {
+    radius_l_ = 0.5 * curr_best_length;
+    radius_s_ = 0.5 * sqrt( pow(curr_best_length, 2) - pow(dist_start_goal_, 2) );
+  }
 
   void samplingInformed(Eigen::Vector3d &sample, const Eigen::Vector3d & start_point, const Eigen::Vector3d & goal_point, double dist_start_goal, double length_curr_path)
   {
-    Eigen::Vector3d 
-    Eigen::Vector3d
-    Matrix3d rotation_matrix;
-    rotation_matrix = 
-    // given node_start, node_goal, path_length
-
     // sample in a sphere set at origin
-
+    Eigen::Vector3d p;
+    p << normal_rand_(gen_), normal_rand_(gen_), normal_rand_(gen_);
+    double r = pow(uniform_rand_(gen_), 0.33333);
+    sample = r * p.normalized();
     // apply transform
-
+    sample.array() *= range_.array();
+    sample = rotation_matrix_ * sample + centre_;
     
   }
 
@@ -96,6 +114,7 @@ private:
   Eigen::Matrix3d rotation_matrix_;
   double radius_l_;
   double radius_s_;
+  double dist_start_goal_;
  
 };
 
