@@ -52,6 +52,7 @@ namespace path_plan
       ROS_WARN_STREAM("[RRT*] param: max_tree_node_nums: " << max_tree_node_nums_);
 
       sampler_.setSamplingRange(mapPtr->getOrigin(), mapPtr->getMapSize());
+      sampler_informed_.setSamplingRange(mapPtr->getOrigin(), mapPtr->getMapSize());
 
       valid_tree_node_nums_ = 0;
       nodes_pool_.resize(max_tree_node_nums_);
@@ -84,6 +85,8 @@ namespace path_plan
       goal_node_->cost_from_start = DBL_MAX; // important
       valid_tree_node_nums_ = 2;             // put start and goal in tree
 
+      sampler_informed_.setInformedSampler(s, g);
+
       ROS_INFO("[RRT*]: RRT starts planning a path");
       return rrt_star(s, g);
     }
@@ -113,6 +116,8 @@ namespace path_plan
     ros::NodeHandle nh_;
 
     BiasSampler sampler_;
+
+    InformedSampler sampler_informed_;
 
     double steer_length_;
     double search_radius_;
@@ -231,7 +236,10 @@ namespace path_plan
         // SAMPLE for a random node
         /* biased random sampling */
         Eigen::Vector3d x_rand;
-        sampler_.samplingOnce(x_rand);
+        if (!goal_found)
+          sampler_.samplingOnce(x_rand);
+        else
+          sampler_informed_.samplingInformed(x_rand);
         // samplingOnce(x_rand);
         if (!map_ptr_->isStateValid(x_rand))
         {
@@ -343,6 +351,7 @@ namespace path_plan
             vector<Eigen::Vector3d> curr_best_path;
             fillPath(goal_node_, curr_best_path);
             path_list_.emplace_back(curr_best_path);
+            sampler_informed_.updateRadius(goal_node_->cost_from_start);
             solution_cost_time_pair_list_.emplace_back(goal_node_->cost_from_start, (ros::Time::now() - rrt_start_time).toSec());
           }
         }
@@ -372,6 +381,7 @@ namespace path_plan
             vector<Eigen::Vector3d> curr_best_path;
             fillPath(goal_node_, curr_best_path);
             path_list_.emplace_back(curr_best_path);
+            sampler_informed_.updateRadius(goal_node_->cost_from_start);
             solution_cost_time_pair_list_.emplace_back(goal_node_->cost_from_start, (ros::Time::now() - rrt_start_time).toSec());
           }
           index_check++;

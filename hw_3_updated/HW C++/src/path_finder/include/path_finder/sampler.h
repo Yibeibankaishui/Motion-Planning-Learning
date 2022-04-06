@@ -72,7 +72,12 @@ protected:
 class InformedSampler : public BiasSampler
 {
 public:
-  InformedSampler(const Eigen::Vector3d & start_pt, const Eigen::Vector3d & goal_pt): BiasSampler()
+  InformedSampler(): BiasSampler()
+  {
+
+  };
+
+  void setInformedSampler(const Eigen::Vector3d & start_pt, const Eigen::Vector3d & goal_pt)
   {
     Eigen::Matrix<double, 1, 3> eZ_T;
     eZ_T << 0, 1, 0;
@@ -86,8 +91,7 @@ public:
     radius_s_ = 4*dist_start_goal_;
     range_ << radius_s_, radius_l_, radius_s_;
     origin_ = centre_;
-
-  };
+  }
 
   // update the long and the short radius
   void updateRadius(double curr_best_length)
@@ -96,7 +100,7 @@ public:
     radius_s_ = 0.5 * sqrt( pow(curr_best_length, 2) - pow(dist_start_goal_, 2) );
   }
 
-  void samplingInformed(Eigen::Vector3d &sample, const Eigen::Vector3d & start_point, const Eigen::Vector3d & goal_point, double dist_start_goal, double length_curr_path)
+  void samplingInformed(Eigen::Vector3d &sample)
   {
     // sample in a sphere set at origin
     Eigen::Vector3d p;
