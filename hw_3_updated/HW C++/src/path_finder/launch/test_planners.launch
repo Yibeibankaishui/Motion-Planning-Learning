@@ -11,8 +11,8 @@
 
   <arg name="steer_length" value="2.0" />
   <arg name="search_radius" value="6.0" />
-  <arg name="search_time" value="0.2" />
-  <arg name="max_tree_node_nums" value="5000" />
+  <arg name="search_time" value="2.0" />
+  <arg name="max_tree_node_nums" value="10000" />
 
   <node pkg="path_finder" type="path_finder" name="path_finder_node" output="screen">
     <remap from="/global_cloud" to="$(arg global_env_pcd2_topic)"/>

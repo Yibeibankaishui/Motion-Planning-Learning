@@ -86,6 +86,7 @@ namespace path_plan
       valid_tree_node_nums_ = 2;             // put start and goal in tree
 
       sampler_informed_.setInformedSampler(s, g);
+      sampler_informed_.updateRadius(goal_node_->cost_from_start);
 
       ROS_INFO("[RRT*]: RRT starts planning a path");
       return rrt_star(s, g);
@@ -220,6 +221,7 @@ namespace path_plan
 
     bool rrt_star(const Eigen::Vector3d &s, const Eigen::Vector3d &g)
     {
+      ros::Rate rate(1000);
       ros::Time rrt_start_time = ros::Time::now();
       bool goal_found = false;
 
@@ -233,13 +235,18 @@ namespace path_plan
       int idx = 0;
       for (idx = 0; (ros::Time::now() - rrt_start_time).toSec() < search_time_ && valid_tree_node_nums_ < max_tree_node_nums_; ++idx)
       {
+
         // SAMPLE for a random node
         /* biased random sampling */
         Eigen::Vector3d x_rand;
         if (!goal_found)
           sampler_.samplingOnce(x_rand);
-        else
+        else{
+          sampler_informed_.updateRadius(goal_node_->cost_from_start);
           sampler_informed_.samplingInformed(x_rand);
+        }
+
+
         // samplingOnce(x_rand);
         if (!map_ptr_->isStateValid(x_rand))
         {
@@ -253,6 +260,7 @@ namespace path_plan
           ROS_ERROR("nearest query error");
           continue;
         }
+
         // get the data of the nearset node using pointer
         RRTNode3DPtr nearest_node = (RRTNode3DPtr)kd_res_item_data(p_nearest);
         kd_res_free(p_nearest);
@@ -276,6 +284,7 @@ namespace path_plan
           ROS_ERROR("bkwd kd range query error");
           break;
         }
+
         while (!kd_res_end(nbr_set))
         {
           RRTNode3DPtr curr_node = (RRTNode3DPtr)kd_res_item_data(nbr_set);

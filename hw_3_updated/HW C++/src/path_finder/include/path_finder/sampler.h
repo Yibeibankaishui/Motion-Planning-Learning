@@ -79,14 +79,16 @@ public:
 
   void setInformedSampler(const Eigen::Vector3d & start_pt, const Eigen::Vector3d & goal_pt)
   {
-    Eigen::Matrix<double, 1, 3> eZ_T;
-    eZ_T << 0, 1, 0;
+
     centre_ = (start_pt + goal_pt) * 0.5;
     Eigen::Vector3d direction;
     direction = goal_pt - start_pt;
     dist_start_goal_ = direction.norm();
     direction = direction * (1 / dist_start_goal_);
-    rotation_matrix_ = direction * eZ_T;
+    Eigen::Vector3d rotation_axis = Eigen::Vector3d::UnitY().cross(direction);
+    Eigen::AngleAxisd rotation_vector(asin( rotation_axis.norm() ), rotation_axis);
+    rotation_matrix_ = rotation_vector.toRotationMatrix();
+
     radius_l_ = 4*dist_start_goal_;
     radius_s_ = 4*dist_start_goal_;
     range_ << radius_s_, radius_l_, radius_s_;
@@ -98,13 +100,16 @@ public:
   {
     radius_l_ = 0.5 * curr_best_length;
     radius_s_ = 0.5 * sqrt( pow(curr_best_length, 2) - pow(dist_start_goal_, 2) );
+    range_ << radius_s_, radius_l_, radius_s_;
   }
 
   void samplingInformed(Eigen::Vector3d &sample)
   {
     // sample in a sphere set at origin
     Eigen::Vector3d p;
-    p << normal_rand_(gen_), normal_rand_(gen_), normal_rand_(gen_);
+    p[0] = normal_rand_(gen_);
+    p[1] = normal_rand_(gen_);
+    p[2] = normal_rand_(gen_);
     double r = pow(uniform_rand_(gen_), 0.33333);
     sample = r * p.normalized();
     // apply transform
