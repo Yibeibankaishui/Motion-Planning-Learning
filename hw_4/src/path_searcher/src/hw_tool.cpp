@@ -102,18 +102,18 @@ double Homeworktool::OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d 
     */
     
     Eigen::Vector3d d_p = _target_position - _start_position;
-    Eigen::Vector3d d_v = 0 - _start_velocity;
+    Eigen::Vector3d d_v = - _start_velocity;
 
     double optimal_time = OptimalT_numerical(d_p, d_v);
-    optimal_cost = Calculate_dJ(d_p, d_v, optimal_time);
+    optimal_cost = Calculate_J(d_p, d_v, optimal_time);
 
-
+    ROS_INFO("%f", optimal_cost);
     return optimal_cost;
 }
 
 
 // numerical method
-double OptimalT_numerical(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
+double Homeworktool::OptimalT_numerical(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
     const double t0 = T_start;
     double t_cur, t_next;
     double dJ, dJ2;
@@ -128,38 +128,39 @@ double OptimalT_numerical(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
             break;
         }
     }
+    ROS_INFO("T:   %f", t_cur);
     return t_cur;
 }
 
 
-double OptimalT_analytic(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
+double Homeworktool::OptimalT_analytic(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
     double a = 16 * (d_v.array().pow(2).sum());
-    double b = -48 * (d_p.transpose() * d_v);
+    double b = -48 * ((d_p.array()) * (d_v.array())).sum();
     double c = 36 * (d_p.array().pow(2).sum()); 
 
     std::vector<double> T_pre;
     double OptimalT = 99999;
-    T_pre << 0,
-             0,
-             0,
-             0;
-    for (auto itr = T_pre.begin(); itr != T_pre.end()){
-        if (*itr < 0){
-            T_pre.erase(itr);
-        }
-        else {
-            if (*itr < OptimalT){
-                OptimalT = *itr;
-            }
-            itr++;}
-    }
+    // T_pre << 0,
+    //          0,
+    //          0,
+    //          0;
+    // for (auto itr = T_pre.begin(); itr != T_pre.end()){
+    //     if (*itr < 0){
+    //         T_pre.erase(itr);
+    //     }
+    //     else {
+    //         if (*itr < OptimalT){
+    //             OptimalT = *itr;
+    //         }
+    //         itr++;}
+    // }
     return OptimalT;
 }
 
 
-double Calculate_J(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
+double Homeworktool::Calculate_J(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
     double p3 = pow((3333*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2))), 2)/10000;
-    double p2 = -((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))) - ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))) - ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2)));
+    double p2 = -((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2)) - ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2)) - ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2));
     double p1 = pow(((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T), 2) + pow(((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T),2) + pow(((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T),2) + 1;
     double p0 = 0;
     double J = p3 * T * T * T + p2 * T * T + p1 * T;
@@ -167,22 +168,22 @@ double Calculate_J(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double 
 }
 
 
-double Calculate_dJ(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
+double Homeworktool::Calculate_dJ(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
     double p4 = 1;
     double p3 = 0;
     double p2 = 16 * (d_v.array().pow(2).sum());
-    double p1 = -48 * (d_p.transpose() * d_v);
+    double p1 = -48 * ((d_p.array()) * (d_v.array())).sum();
     double p0 = 36 * (d_p.array().pow(2).sum()); 
     double dJ = p4 * pow(T, 4) + p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
     return dJ;
 }
 
 
-double Calculate_dJ2(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
+double Homeworktool::Calculate_dJ2(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
     double p3 = 4;
     double p2 = 0;
     double p1 = 32 * (d_v.array().pow(2).sum());
-    double p0 = -96 * (d_p.transpose() * d_v);
+    double p0 = -96 * ((d_p.array()) * (d_v.array())).sum();
     double dJ2 = p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
     return dJ2;
 }
