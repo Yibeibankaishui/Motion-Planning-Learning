@@ -127,9 +127,9 @@ double OptimalT_analytic(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
 
 
 double Calculate_J(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
-    double p3 = ;
-    double p2 = ;
-    double p1 = ;
+    double p3 = pow((3333*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2))), 2)/10000;
+    double p2 = -((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))) - ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))) - ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2)));
+    double p1 = pow(((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T), 2) + pow(((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T),2) + pow(((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T),2) + 1;
     double p0 = 0;
     double J = p3 * T * T * T + p2 * T * T + p1 * T;
 
@@ -155,4 +155,6 @@ double Calculate_dJ2(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, doubl
 }
 
  
-[ (3333*((12*Dpx)/T^3 - (6*Dvx)/T^2)^2)/10000 + (3333*((12*Dpy)/T^3 - (6*Dvy)/T^2)^2)/10000 + (3333*((12*Dpz)/T^3 - (6*Dvz)/T^2)^2)/10000, - ((6*Dpx)/T^2 - (2*Dvx)/T)*((12*Dpx)/T^3 - (6*Dvx)/T^2) - ((6*Dpy)/T^2 - (2*Dvy)/T)*((12*Dpy)/T^3 - (6*Dvy)/T^2) - ((6*Dpz)/T^2 - (2*Dvz)/T)*((12*Dpz)/T^3 - (6*Dvz)/T^2), ((6*Dpx)/T^2 - (2*Dvx)/T)^2 + ((6*Dpy)/T^2 - (2*Dvy)/T)^2 + ((6*Dpz)/T^2 - (2*Dvz)/T)^2 + 1, 0]
+(3333*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2)))^2)/10000 + (3333*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2)))^2)/10000 + (3333*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2)))^2)/10000,
+ - ((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))) - ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))) - ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2))),
+  ((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)^2 + ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)^2 + ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)^2 + 1,
