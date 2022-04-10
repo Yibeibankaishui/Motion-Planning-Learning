@@ -153,3 +153,6 @@ double Calculate_dJ2(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, doubl
     double p0 = -96 * (d_p.transpose() * d_v);
     double dJ2 = p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
 }
+
+ 
+[ (3333*((12*Dpx)/T^3 - (6*Dvx)/T^2)^2)/10000 + (3333*((12*Dpy)/T^3 - (6*Dvy)/T^2)^2)/10000 + (3333*((12*Dpz)/T^3 - (6*Dvz)/T^2)^2)/10000, - ((6*Dpx)/T^2 - (2*Dvx)/T)*((12*Dpx)/T^3 - (6*Dvx)/T^2) - ((6*Dpy)/T^2 - (2*Dvy)/T)*((12*Dpy)/T^3 - (6*Dvy)/T^2) - ((6*Dpz)/T^2 - (2*Dvz)/T)*((12*Dpz)/T^3 - (6*Dvz)/T^2), ((6*Dpx)/T^2 - (2*Dvx)/T)^2 + ((6*Dpy)/T^2 - (2*Dvy)/T)^2 + ((6*Dpz)/T^2 - (2*Dvz)/T)^2 + 1, 0]
