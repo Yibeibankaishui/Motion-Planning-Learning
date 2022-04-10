@@ -8,6 +8,11 @@
 #include "backward.hpp"
 #include <cmath>
 #include <State.h>
+#include <vector>
+
+#define e_ 0.00001
+#define MAX_ITR 100
+#define T_start 10
 
 class Homeworktool
 {	
@@ -36,6 +41,12 @@ class Homeworktool
 				
 		Eigen::Vector3d coordRounding(const Eigen::Vector3d & coord);
 		double OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d _start_velocity,Eigen::Vector3d _target_position);
+
+		double OptimalT_numerical(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v);
+		double OptimalT_analytic(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v);
+		double Calculate_J(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T);
+		double Calculate_dJ(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T);
+		double Calculate_dJ2(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T);
 };
 
 #endif
