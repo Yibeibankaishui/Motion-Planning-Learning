@@ -9,6 +9,7 @@
 #include <cmath>
 #include <State.h>
 #include <vector>
+#include <algorithm>
 
 #define e_ 0.00001
 #define MAX_ITR 100
