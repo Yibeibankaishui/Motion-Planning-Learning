@@ -8,6 +8,8 @@
         "limits": "cpp",
         "random": "cpp",
         "algorithm": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "cmath": "cpp",
+        "core": "cpp"
     }
 }
