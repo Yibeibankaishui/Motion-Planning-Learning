@@ -107,7 +107,8 @@ double Homeworktool::OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d 
     double optimal_time = OptimalT_numerical(d_p, d_v);
     optimal_cost = Calculate_J(d_p, d_v, optimal_time);
 
-    ROS_INFO("%f", optimal_cost);
+    ROS_INFO("cost:     %f", optimal_cost);
+    ROS_INFO("time:     %f", optimal_time);
     return optimal_cost;
 }
 
@@ -117,15 +118,37 @@ double Homeworktool::OptimalT_numerical(const Eigen::Vector3d d_p, const Eigen::
     const double t0 = T_start;
     double t_cur, t_next;
     double dJ, dJ2;
+    double J;
+    double Jmin = 999999;
+    // double t_optimal;
     t_cur = t0;
-    for (int n = 0; n < MAX_ITR; n++){
-        t_cur = t_next;
-        dJ = Calculate_dJ(d_p, d_v, t_cur);
-        dJ2 = Calculate_dJ2(d_p, d_v, t_cur);
-        t_next = t_cur - dJ / dJ2; 
-        if (abs(t_next - t_cur) < e_){
-            t_cur = t_next;
-            break;
+
+    sum_v_2 = d_v.array().pow(2).sum();
+    sum_p_2 = d_p.array().pow(2).sum();
+    sum_v_p = ((d_p.array()) * (d_v.array())).sum();
+
+    // for (int n = 0; n < MAX_ITR; n++){
+        
+    //     // ROS_INFO("   %f", t_cur);
+    //     dJ = Calculate_dJ(d_p, d_v, t_cur);
+    //     // ROS_INFO("dJ:   %f", dJ);
+        
+    //     dJ2 = Calculate_dJ2(d_p, d_v, t_cur);
+    //     // ROS_INFO("dJ2:   %f", dJ2);
+    //     ROS_INFO("dJ/DJ2:   %f", dJ/dJ2);
+    //     t_next = t_cur + dJ / dJ2; 
+    //     if (abs(t_next - t_cur) < e_){
+    //         t_cur = t_next;
+    //         ROS_INFO("%d", n);
+    //         break;
+    //     }
+    //     t_cur = t_next;
+    // }
+    for (double t_s = 1.0; t_s < T_start; t_s += SEARCH_STEP){
+        J = abs(Calculate_J(d_p, d_v, t_s));
+        if (J < Jmin){
+            t_cur = t_s;
+            Jmin = J;
         }
     }
     ROS_INFO("T:   %f", t_cur);
@@ -134,9 +157,9 @@ double Homeworktool::OptimalT_numerical(const Eigen::Vector3d d_p, const Eigen::
 
 
 double Homeworktool::OptimalT_analytic(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v){
-    double a = 16 * (d_v.array().pow(2).sum());
-    double b = -48 * ((d_p.array()) * (d_v.array())).sum();
-    double c = 36 * (d_p.array().pow(2).sum()); 
+    // double a = 16 * (d_v.array().pow(2).sum());
+    // double b = -48 * ((d_p.array()) * (d_v.array())).sum();
+    // double c = 36 * (d_p.array().pow(2).sum()); 
 
     std::vector<double> T_pre;
     double OptimalT = 99999;
@@ -159,32 +182,48 @@ double Homeworktool::OptimalT_analytic(const Eigen::Vector3d d_p, const Eigen::V
 
 
 double Homeworktool::Calculate_J(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
-    double p3 = pow((3333*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2))), 2)/10000;
-    double p2 = -((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2)) - ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2)) - ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2));
-    double p1 = pow(((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T), 2) + pow(((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T),2) + pow(((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T),2) + 1;
+    // double p3 = pow((3333*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2))), 2)/10000 + pow((3333*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2))), 2)/10000;
+    // double p2 = -((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T)*((12*d_p(0))/(pow(T, 3))) - (6*d_v(0))/(pow(T, 2)) - ((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T)*((12*d_p(1))/(pow(T, 3))) - (6*d_v(1))/(pow(T, 2)) - ((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T)*((12*d_p(2))/(pow(T, 3))) - (6*d_v(2))/(pow(T, 2));
+    // double p1 = pow(((6*d_p(0))/(pow(T, 2)) - (2*d_v(0))/T), 2) + pow(((6*d_p(1))/(pow(T, 2)) - (2*d_v(1))/T),2) + pow(((6*d_p(2))/(pow(T, 2)) - (2*d_v(2))/T),2) + 1;
+    // double p0 = 0;
+    // double J = p3 * T * T * T + p2 * T * T + p1 * T;
+    double p1 = 1;
     double p0 = 0;
-    double J = p3 * T * T * T + p2 * T * T + p1 * T;
+    double p_1 = (-4) * sum_v_2;
+    double p_2 = (-20) * sum_v_p;
+    double p_3 = (-20) * sum_p_2;
+    double J = p1 * T + p_1 * (1.0/T) + p_2 * (1.0/T) * (1.0/T) + p_3 * (1.0/T) * (1.0/T) * (1.0/T);
     return J;
 }
 
 
 double Homeworktool::Calculate_dJ(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
-    double p4 = 1;
-    double p3 = 0;
-    double p2 = 16 * (d_v.array().pow(2).sum());
-    double p1 = -48 * ((d_p.array()) * (d_v.array())).sum();
-    double p0 = 36 * (d_p.array().pow(2).sum()); 
-    double dJ = p4 * pow(T, 4) + p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
+    double p0 = 1;
+    double p_1 = 0;
+    double p_2 = 4 * sum_v_2;
+    double p_3 = 40 * sum_v_p;
+    double p_4 = 60 * sum_p_2;
+    double dJ = p0 * pow(T,5) + p_2 * pow(T,3) + p_3 * pow(T,2) + p_4 * T;
+    // double p4 = 1;
+    // double p3 = 0;
+    // double p2 = 16 * (d_v.array().pow(2).sum());
+    // double p1 = -48 * ((d_p.array()) * (d_v.array())).sum();
+    // double p0 = 36 * (d_p.array().pow(2).sum()); 
+    // double dJ = p4 * pow(T, 4) + p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
     return dJ;
 }
 
 
 double Homeworktool::Calculate_dJ2(const Eigen::Vector3d d_p, const Eigen::Vector3d d_v, double T){
-    double p3 = 4;
-    double p2 = 0;
-    double p1 = 32 * (d_v.array().pow(2).sum());
-    double p0 = -96 * ((d_p.array()) * (d_v.array())).sum();
-    double dJ2 = p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
+    double p_3 = (-8) * sum_v_2;
+    double p_4 = (-120) * sum_v_p;
+    double p_5 = (-240) * sum_p_2;
+    double dJ2 = p_3 * pow(T,2) + p_4 * T + p_5;
+    // double p3 = 4;
+    // double p2 = 0;
+    // double p1 = 32 * (d_v.array().pow(2).sum());
+    // double p0 = -48 * ((d_p.array()) * (d_v.array())).sum();
+    // double dJ2 = p3 * pow(T, 3) + p2 * pow(T, 2) + p1 * T + p0;
     return dJ2;
 }
 
