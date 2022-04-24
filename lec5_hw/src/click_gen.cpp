@@ -62,7 +62,7 @@ void minimumJerkTrajGen(
     const Eigen::Vector3d &terminalVel,
     const Eigen::Vector3d &terminalAcc,
     const Eigen::Matrix3Xd &intermediatePositions,
-    const Eigen::VectorXd &timeAllocationVector,
+    const Eigen::VectorXd &timeAllocationVector,    //Time allocated for each piece
     // Outputs:
     Eigen::MatrixX3d &coefficientMatrix)
 {
@@ -82,7 +82,112 @@ void minimumJerkTrajGen(
 
     // ------------------------ Put your solution below ------------------------
 
+    // T, T^1, T^2, T^3, T^4, T^5
+    const Eigen::VectorXd T1 = timeAllocationVector;
+    const Eigen::VectorXd T2 = timeAllocationVector.array().pow(2);
+    const Eigen::VectorXd T3 = timeAllocationVector.array().pow(3);
+    const Eigen::VectorXd T4 = timeAllocationVector.array().pow(4);
+    const Eigen::VectorXd T5 = timeAllocationVector.array().pow(5);
 
+    const int N = pieceNum;
+    Eigen::MatrixXd M = Eigen::MatrixXd::Zero(6 * N, 6 * N);
+    Eigen::MatrixXd b = Eigen::MatrixXd::Zero(6 * N, 3);
+
+    b.row(0) = initialPos.transpose();
+    b.row(1) = initialVel.transpose();
+    b.row(2) = initialAcc.transpose();
+
+    b.row(6 * N - 3) = terminalPos.transpose();
+    b.row(6 * N - 2) = terminalVel.transpose();
+    b.row(6 * N - 1) = terminalAcc.transpose();
+
+    // initial constraint
+    M(0, 0) = 1.0;
+    M(1, 1) = 1.0;
+    M(2, 2) = 2.0;
+    // terminal constraint
+    // pos
+    M(6 * N - 3, 6 * N - 6) = 1.0;
+    M(6 * N - 3, 6 * N - 5) = T1(N - 1);
+    M(6 * N - 3, 6 * N - 4) = T2(N - 1);
+    M(6 * N - 3, 6 * N - 3) = T3(N - 1);
+    M(6 * N - 3, 6 * N - 2) = T4(N - 1);
+    M(6 * N - 3, 6 * N - 1) = T5(N - 1);
+    // velocity
+    M(6 * N - 2, 6 * N - 5) = 1.0;
+    M(6 * N - 2, 6 * N - 4) = 2.0 * T1(N - 1);
+    M(6 * N - 2, 6 * N - 3) = 3.0 * T2(N - 1);
+    M(6 * N - 2, 6 * N - 2) = 4.0 * T3(N - 1);
+    M(6 * N - 2, 6 * N - 1) = 5.0 * T4(N - 1);
+    // acceleration
+    M(6 * N - 1, 6 * N - 4) = 2.0;
+    M(6 * N - 1, 6 * N - 3) = 6.0 * T1(N - 1);
+    M(6 * N - 1, 6 * N - 2) = 12.0 * T2(N - 1);
+    M(6 * N - 1, 6 * N - 1) = 20.0 * T3(N - 1);    
+
+    // construct the matrix M
+    for (int i = 0; i < N - 1; i++){
+
+        // continuity constraints
+        // f_j(T) == f_{j+1}(0)
+
+        // Jerk
+        // jerk = 6 c3 + 24 t c4 + 60 t2 c5
+        M(6 * i + 3, 6 * i + 3) = 6.0;
+        M(6 * i + 3, 6 * i + 4) = 24.0 * T1(i);
+        M(6 * i + 3, 6 * i + 5) = 60.0 * T2(i);
+        // jerk of next piece at time 0
+        M(6 * i + 3, 6 * i + 6) = -6.0;
+
+        // Snap
+        // snap = 24 c4 + 120 t c5
+        M(6 * i + 4, 6 * i + 4) = 24.0;
+        M(6 * i + 4, 6 * i + 5) = 120.0 * T1(i);
+        // snap of next piece at time 0
+        M(6 * i + 4, 6 * i + 6) = -24.0;
+
+        // Position
+        // Pos(T) = waypoints(i+1)
+        M(6 * i + 5, 6 * i) = 1.0;
+        M(6 * i + 5, 6 * i + 1) = T1(i);
+        M(6 * i + 5, 6 * i + 2) = T2(i);
+        M(6 * i + 5, 6 * i + 3) = T3(i);
+        M(6 * i + 5, 6 * i + 4) = T4(i);
+        M(6 * i + 5, 6 * i + 5) = T5(i);
+        // next waypoint
+        b.row(6 * i + 5) = intermediatePositions.col(i).transpose();
+
+        // Velocity
+        M(6 * i + 6, 6 * i + 1) = 1.0;
+        M(6 * i + 6, 6 * i + 2) = 2.0 * T1(i);
+        M(6 * i + 6, 6 * i + 3) = 3.0 * T2(i);
+        M(6 * i + 6, 6 * i + 4) = 4.0 * T3(i);
+        M(6 * i + 6, 6 * i + 5) = 5.0 * T4(i);
+        // velocity of next piece at time 0
+        M(6 * i + 6, 6 * i + 6) = -1.0;
+
+        // Acceleration
+        M(6 * i + 7, 6 * i + 2) = 2.0;
+        M(6 * i + 7, 6 * i + 3) = 6.0 * T1(i);
+        M(6 * i + 7, 6 * i + 4) = 12.0 * T2(i);
+        M(6 * i + 7, 6 * i + 5) = 20.0 * T3(i);
+        // acceleration of next piece at time 0
+        M(6 * i + 7, 6 * i + 6) = -2.0;
+
+        // Position
+        // Pos_j(T) = Pos_j+1(0)
+        M(6 * i + 8, 6 * i) = 1.0;
+        M(6 * i + 8, 6 * i + 1) = T1(i);
+        M(6 * i + 8, 6 * i + 2) = T2(i);
+        M(6 * i + 8, 6 * i + 3) = T3(i);
+        M(6 * i + 8, 6 * i + 4) = T4(i);
+        M(6 * i + 8, 6 * i + 5) = T5(i);
+        M(6 * i + 8, 6 * i + 6) = -1.0;
+    }
+
+
+    // Solve the equation
+    coefficientMatrix = M.fullPivLu().solve(b);
 
     // ------------------------ Put your solution above ------------------------
 }
