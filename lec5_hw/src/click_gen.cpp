@@ -137,14 +137,14 @@ void minimumJerkTrajGen(
         M(6 * i + 3, 6 * i + 4) = 24.0 * T1(i);
         M(6 * i + 3, 6 * i + 5) = 60.0 * T2(i);
         // jerk of next piece at time 0
-        M(6 * i + 3, 6 * i + 6) = -6.0;
+        M(6 * i + 3, 6 * i + 9) = -6.0;
 
         // Snap
         // snap = 24 c4 + 120 t c5
         M(6 * i + 4, 6 * i + 4) = 24.0;
         M(6 * i + 4, 6 * i + 5) = 120.0 * T1(i);
         // snap of next piece at time 0
-        M(6 * i + 4, 6 * i + 6) = -24.0;
+        M(6 * i + 4, 6 * i + 10) = -24.0;
 
         // Position
         // Pos(T) = waypoints(i+1)
@@ -164,7 +164,7 @@ void minimumJerkTrajGen(
         M(6 * i + 6, 6 * i + 4) = 4.0 * T3(i);
         M(6 * i + 6, 6 * i + 5) = 5.0 * T4(i);
         // velocity of next piece at time 0
-        M(6 * i + 6, 6 * i + 6) = -1.0;
+        M(6 * i + 6, 6 * i + 7) = -1.0;
 
         // Acceleration
         M(6 * i + 7, 6 * i + 2) = 2.0;
@@ -172,7 +172,7 @@ void minimumJerkTrajGen(
         M(6 * i + 7, 6 * i + 4) = 12.0 * T2(i);
         M(6 * i + 7, 6 * i + 5) = 20.0 * T3(i);
         // acceleration of next piece at time 0
-        M(6 * i + 7, 6 * i + 6) = -2.0;
+        M(6 * i + 7, 6 * i + 8) = -2.0;
 
         // Position
         // Pos_j(T) = Pos_j+1(0)
