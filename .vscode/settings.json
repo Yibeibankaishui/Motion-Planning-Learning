@@ -9,6 +9,8 @@
         "random": "cpp",
         "algorithm": "cpp",
         "complex": "cpp",
+        "cmath": "cpp",
+        "core": "cpp"
         "__bit_reference": "cpp",
         "__hash_table": "cpp",
         "__tree": "cpp",

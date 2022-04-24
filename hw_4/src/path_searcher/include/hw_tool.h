@@ -11,9 +11,10 @@
 #include <vector>
 #include <algorithm>
 
-#define e_ 0.00001
-#define MAX_ITR 100
-#define T_start 10
+#define e_ 0.0001
+#define MAX_ITR 200
+#define T_start 100
+#define SEARCH_STEP 0.1
 
 class Homeworktool
 {	
@@ -31,6 +32,10 @@ class Homeworktool
 
 		Eigen::Vector3d gridIndex2coord(const Eigen::Vector3i & index);
 		Eigen::Vector3i coord2gridIndex(const Eigen::Vector3d & pt);
+
+		double sum_v_2;
+		double sum_p_2;
+		double sum_v_p;
 
 	public:
 		Homeworktool(){};
