@@ -63,7 +63,7 @@ class Nodelet : public nodelet::Nodelet {
     double dt = 0;
     nh.getParam("dt", dt);
     nh.getParam("delay", delay_);
-
+    // use Timer
     plan_timer_ = nh.createTimer(ros::Duration(dt), &Nodelet::plan_timer_callback, this);
     odom_sub_ = nh.subscribe<nav_msgs::Odometry>("odom", 1, &Nodelet::odom_call_back, this);
     cmd_pub_ = nh.advertise<car_msgs::CarCmd>("car_cmd", 1);

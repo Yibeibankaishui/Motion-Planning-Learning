@@ -28,6 +28,7 @@ struct Car {
     return ds;
   }
 
+  // change the state of car model
   void step(const Eigen::Vector2d& input, const double dt) {
     // Runge–Kutta
     Eigen::Vector4d k1 = diff(state, input);

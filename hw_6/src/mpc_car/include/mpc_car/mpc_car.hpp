@@ -58,6 +58,7 @@ class MpcCar {
                      const double& delta) {
     // TODO: set values to Ad_, Bd_, gd_
     // ...
+    Ad_ = 
     return;
   }
 
@@ -74,6 +75,7 @@ class MpcCar {
     delta = atan2(ll_ * dphi, 1.0);
   }
 
+  // 
   inline VectorX diff(const VectorX& state,
                       const VectorU& input) const {
     VectorX ds;
@@ -88,6 +90,7 @@ class MpcCar {
     return ds;
   }
 
+  // change the state of car model
   inline void step(VectorX& state, const VectorU& input, const double dt) const {
     // Runge–Kutta
     VectorX k1 = diff(state, input);
@@ -111,6 +114,7 @@ class MpcCar {
     nh.getParam("track_points_x", track_points_x);
     nh.getParam("track_points_y", track_points_y);
     nh.getParam("desired_v", desired_v_);
+    // reference trajectory
     s_.setWayPoints(track_points_x, track_points_y);
     // load parameters
     nh.getParam("ll", ll_);
@@ -131,6 +135,7 @@ class MpcCar {
 
     // TODO: set initial value of Ad, Bd, gd
     Ad_.setIdentity();  // Ad for instance
+    Bd_.setIdentity(); // Bd for instance
     // ...
     // set size of sparse matrices
     P_.resize(m * N_, m * N_);
@@ -195,6 +200,7 @@ class MpcCar {
     BB.setZero(n * N_, m * N_);
     AA.setZero(n * N_, n);
     gg.setZero(n * N_, 1);
+    // get the reference point
     double s0 = s_.findS(x0.head(2));
     double phi, v, delta;
     double last_phi = x0(2);
