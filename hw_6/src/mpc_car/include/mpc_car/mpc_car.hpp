@@ -57,8 +57,25 @@ class MpcCar {
                      const double& v,
                      const double& delta) {
     // TODO: set values to Ad_, Bd_, gd_
-    // ...
-    Ad_ = 
+    // Ad = I + dt * Ac
+    Eigen::Matrix<double, n, n> MatrixI = Eigen::Matrix<double, n, n>::Identity();
+    Ad_.coeffRef(0, 2) = -v * sin(phi) * dt_;
+    Ad_.coeffRef(0, 3) = cos(phi) * dt_;
+    Ad_.coeffRef(1, 2) = v * cos(phi) * dt_;
+    Ad_.coeffRef(1, 3) = sin(phi) * dt_;
+    Ad_.coeffRef(2, 3) = tan(delta) / ll_;
+
+    Ad_ = Ad_ + MatrixI;
+
+    // Bd = dt * Bc
+    Bd_.coeffRef(2, 1) = dt_ * v / (ll_ * (pow(cos(delta), 2)));
+    Bd_.coeffRef(3, 0) = dt_;
+
+    // gd_ = dt * gc
+    gd_.coeffRef(0, 0) = dt_ * v * phi * sin(phi);
+    gd_.coeffRef(1, 0) = -dt_ * v * phi * cos(phi);
+    gd_.coeffRef(2, 0) = 0;
+    gd_.coeffRef(3, 0) = -dt_ * v * delta / (ll_ * (pow(cos(delta), 2)));
     return;
   }
 
@@ -136,6 +153,7 @@ class MpcCar {
     // TODO: set initial value of Ad, Bd, gd
     Ad_.setIdentity();  // Ad for instance
     Bd_.setIdentity(); // Bd for instance
+    gd_.
     // ...
     // set size of sparse matrices
     P_.resize(m * N_, m * N_);
@@ -169,7 +187,9 @@ class MpcCar {
       Cu_.coeffRef(i * 3 + 0, i * m + 0) = 1;
       lu_.coeffRef(i * 3 + 0, 0) = -a_max_;
       uu_.coeffRef(i * 3 + 0, 0) = a_max_;
-      // ...
+      // delta_min <= delta <= delta_max
+
+      // v_min <= v <= v_max
 
       // TODO: set stage constraints of states (v)
       // -v_max <= v <= v_max
