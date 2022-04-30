@@ -58,23 +58,20 @@ class MpcCar {
                      const double& delta) {
     // TODO: set values to Ad_, Bd_, gd_
     // Ad = I + dt * Ac
-    Eigen::Matrix<double, n, n> MatrixI = Eigen::Matrix<double, n, n>::Identity();
     Ad_.coeffRef(0, 2) = -v * sin(phi) * dt_;
     Ad_.coeffRef(0, 3) = cos(phi) * dt_;
     Ad_.coeffRef(1, 2) = v * cos(phi) * dt_;
     Ad_.coeffRef(1, 3) = sin(phi) * dt_;
     Ad_.coeffRef(2, 3) = tan(delta) / ll_;
 
-    Ad_ = Ad_ + MatrixI;
-
     // Bd = dt * Bc
     Bd_.coeffRef(2, 1) = dt_ * v / (ll_ * (pow(cos(delta), 2)));
-    Bd_.coeffRef(3, 0) = dt_;
+    // Bd_.coeffRef(3, 0) = dt_;
 
     // gd_ = dt * gc
     gd_.coeffRef(0, 0) = dt_ * v * phi * sin(phi);
     gd_.coeffRef(1, 0) = -dt_ * v * phi * cos(phi);
-    gd_.coeffRef(2, 0) = 0;
+    // gd_.coeffRef(2, 0) = 0;
     gd_.coeffRef(3, 0) = -dt_ * v * delta / (ll_ * (pow(cos(delta), 2)));
     return;
   }
@@ -152,9 +149,9 @@ class MpcCar {
 
     // TODO: set initial value of Ad, Bd, gd
     Ad_.setIdentity();  // Ad for instance
-    Bd_.setIdentity(); // Bd for instance
-    gd_.
-    // ...
+    Bd_.coeffRef(3, 0) = dt_;
+    gd_.coeffRef(2, 0) = 0;
+
     // set size of sparse matrices
     P_.resize(m * N_, m * N_);
     q_.resize(m * N_, 1);
@@ -189,13 +186,11 @@ class MpcCar {
       uu_.coeffRef(i * 3 + 0, 0) = a_max_;
       // delta_min <= delta <= delta_max
 
-      // v_min <= v <= v_max
-
       // TODO: set stage constraints of states (v)
       // -v_max <= v <= v_max
-      // Cx_.coeffRef( ...
-      // lx_.coeffRef( ...
-      // ux_.coeffRef( ...
+      Cx_.coeffRef(i, i * N_ + 2) = dt;
+      lx_.coeffRef(i, 0) = -v_max;
+      ux_.coeffRef(i, 0) = v_max;
     }
     // set predict mats size
     predictState_.resize(N_);
@@ -217,6 +212,9 @@ class MpcCar {
     VectorX x0 = compensateDelay(x0_observe_);
     // set BB, AA, gg
     Eigen::MatrixXd BB, AA, gg;
+    // define blocks in matrix BB, AA, gg
+    Eigen::MatrixXd BB_i, AA_i, gg_i;
+    Eigen::MatrixXd BB_i_temp;
     BB.setZero(n * N_, m * N_);
     AA.setZero(n * N_, n);
     gg.setZero(n * N_, 1);
@@ -234,6 +232,7 @@ class MpcCar {
         phi += 2 * M_PI;
       }
       last_phi = phi;
+      // get Ad_, Bd_, gd_
       linearization(phi, v, delta);
       // calculate big state-space matrices
       /* *                BB                AA
@@ -249,14 +248,33 @@ class MpcCar {
         BB.block(0, 0, n, m) = Bd_;
         AA.block(0, 0, n, n) = Ad_;
         gg.block(0, 0, n, 1) = gd_;
+
+        BB_i = Bd_;
+        AA_i = Ad_;
+        gg_i = gd_;
       } else {
         // TODO: set BB AA gg
-        // ...
+        BB_i_temp = Ad_ * BB_i;
+        BB_i.resize(n, m * (i + 1));
+        BB_i << BB_i_temp, Bd_;
+        AA_i = Ad_ * AA_i;
+        gg_i = Ad_ * gg_i + gd_;
+
+        BB.block(n * i, 0, n, m * (i + 1)) = BB_i;
+        AA.block(n * i, 0, n, n) = AA_i;
+        gg.block(n * i, 0, n, 1) = gg_i;
       }
       // TODO: set qx
       Eigen::Vector2d xy = s_(s0); // reference (x_r, y_r)
-      // qx.coeffRef(...
-      // ...
+      if (i == N_ - 1) {
+        qx.coeffRef((N_ - 1) * n, 0) = -2.0 * rhoN_ * xy(0);
+        qx.coeffRef((N_ - 1) * n + 1, 0) = -2.0 * rhoN_ * xy(1);
+      } else {
+        qx.coeffRef(i * n, 0) = -2.0 * xy(0);
+        qx.coeffRef(i * n + 1, 0) = -2.0 * xy(1);
+      }
+
+      // update reference point
       s0 += desired_v_ * dt_;
       s0 = s0 < s_.arcL() ? s0 : s_.arcL();
     }
@@ -295,6 +313,7 @@ class MpcCar {
       return ret;
     }
     Eigen::VectorXd sol = qpSolver_.getPrimalSol();
+    // use Eigen::Map to transform data to Eigen matrix
     Eigen::MatrixXd solMat = Eigen::Map<const Eigen::MatrixXd>(sol.data(), m, N_);
     Eigen::VectorXd solState = BB * sol + AA * x0 + gg;
     Eigen::MatrixXd predictMat = Eigen::Map<const Eigen::MatrixXd>(solState.data(), n, N_);
@@ -305,7 +324,9 @@ class MpcCar {
     }
     return ret;
   }
-
+  
+  // state: px, py, phi, v
+  // input: a, delta
   void getPredictXU(double t, VectorX& state, VectorU& input) {
     if (t <= dt_) {
       state = predictState_.front();
