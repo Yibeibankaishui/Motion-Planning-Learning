@@ -66,13 +66,14 @@ class MpcCar {
 
     // Bd = dt * Bc
     Bd_.coeffRef(2, 1) = dt_ * v / (ll_ * (pow(cos(delta), 2)));
-    // Bd_.coeffRef(3, 0) = dt_;
+    Bd_.coeffRef(3, 0) = dt_;
 
     // gd_ = dt * gc
     gd_.coeffRef(0, 0) = dt_ * v * phi * sin(phi);
     gd_.coeffRef(1, 0) = -dt_ * v * phi * cos(phi);
-    // gd_.coeffRef(2, 0) = 0;
-    gd_.coeffRef(3, 0) = -dt_ * v * delta / (ll_ * (pow(cos(delta), 2)));
+    gd_.coeffRef(2, 0) = -dt_ * v * delta / (ll_ * (pow(cos(delta), 2)));
+    gd_.coeffRef(3, 0) = 0;
+    
     return;
   }
 
@@ -150,7 +151,7 @@ class MpcCar {
     // TODO: set initial value of Ad, Bd, gd
     Ad_.setIdentity();  // Ad for instance
     Bd_.coeffRef(3, 0) = dt_;
-    gd_.coeffRef(2, 0) = 0;
+    gd_.coeffRef(3, 0) = 0;
 
     // set size of sparse matrices
     P_.resize(m * N_, m * N_);
@@ -185,12 +186,19 @@ class MpcCar {
       lu_.coeffRef(i * 3 + 0, 0) = -a_max_;
       uu_.coeffRef(i * 3 + 0, 0) = a_max_;
       // delta_min <= delta <= delta_max
+      Cu_.coeffRef(i * 3 + 1, i * m + 1) = 1;
+      lu_.coeffRef(i * 3 + 1, 0) = -delta_max_;
+      uu_.coeffRef(i * 3 + 1, 0) = delta_max_;
+      // ddelta
+      Cu_.coeffRef(i * 3 + 2, i * m + 1) = 1;
+      // lu_.coeffRef(i * 3 + 2, 0) = -ddelta_max_ * dt_;
+      // uu_.coeffRef(i * 3 + 2, 0) = ddelta_max_ * dt_;
 
       // TODO: set stage constraints of states (v)
       // -v_max <= v <= v_max
-      Cx_.coeffRef(i, i * N_ + 2) = dt;
-      lx_.coeffRef(i, 0) = -v_max;
-      ux_.coeffRef(i, 0) = v_max;
+      Cx_.coeffRef(i, i * n + 3) = 1;
+      lx_.coeffRef(i, 0) = -0.1;
+      ux_.coeffRef(i, 0) = v_max_;
     }
     // set predict mats size
     predictState_.resize(N_);
@@ -213,8 +221,11 @@ class MpcCar {
     // set BB, AA, gg
     Eigen::MatrixXd BB, AA, gg;
     // define blocks in matrix BB, AA, gg
-    Eigen::MatrixXd BB_i, AA_i, gg_i;
-    Eigen::MatrixXd BB_i_temp;
+    Eigen::MatrixXd BB_i(n, m);
+    Eigen::MatrixXd AA_i(n, n);
+    Eigen::MatrixXd gg_i(n, 1);
+    Eigen::MatrixXd BB_i_temp(n, m);;
+
     BB.setZero(n * N_, m * N_);
     AA.setZero(n * N_, n);
     gg.setZero(n * N_, 1);
@@ -233,6 +244,7 @@ class MpcCar {
       }
       last_phi = phi;
       // get Ad_, Bd_, gd_
+      // using reference phi, v, delta
       linearization(phi, v, delta);
       // calculate big state-space matrices
       /* *                BB                AA
@@ -256,9 +268,14 @@ class MpcCar {
         // TODO: set BB AA gg
         BB_i_temp = Ad_ * BB_i;
         BB_i.resize(n, m * (i + 1));
-        BB_i << BB_i_temp, Bd_;
+        // BB_i << BB_i_temp, Bd_;
+        BB_i.middleCols(0, BB_i_temp.cols()) = BB_i_temp;
+        BB_i.middleCols(BB_i_temp.cols(), Bd_.cols()) = Bd_;
+
         AA_i = Ad_ * AA_i;
+
         gg_i = Ad_ * gg_i + gd_;
+        // gg_i = gd_;
 
         BB.block(n * i, 0, n, m * (i + 1)) = BB_i;
         AA.block(n * i, 0, n, n) = AA_i;
@@ -267,17 +284,24 @@ class MpcCar {
       // TODO: set qx
       Eigen::Vector2d xy = s_(s0); // reference (x_r, y_r)
       if (i == N_ - 1) {
-        qx.coeffRef((N_ - 1) * n, 0) = -2.0 * rhoN_ * xy(0);
-        qx.coeffRef((N_ - 1) * n + 1, 0) = -2.0 * rhoN_ * xy(1);
+        qx.coeffRef((N_ - 1) * n, 0) = -1.0 * rhoN_ * xy(0);
+        qx.coeffRef((N_ - 1) * n + 1, 0) = -1.0 * rhoN_ * xy(1);
+        // qx.coeffRef((N_ - 1) * n + 3, 0) = -1.0 * rhoN_ * v;
+        qx.coeffRef((N_ - 1) * n + 2, 0) = -1.0 * rhoN_ * phi;
       } else {
-        qx.coeffRef(i * n, 0) = -2.0 * xy(0);
-        qx.coeffRef(i * n + 1, 0) = -2.0 * xy(1);
+        qx.coeffRef(i * n, 0) = -1.0 * xy(0);
+        qx.coeffRef(i * n + 1, 0) = -1.0 * xy(1);
+        // qx.coeffRef(i * n + 3, 0) = -1.0 * v;
+        qx.coeffRef(i * n + 2, 0) = -1.0 * phi;
       }
 
       // update reference point
       s0 += desired_v_ * dt_;
       s0 = s0 < s_.arcL() ? s0 : s_.arcL();
     }
+    // std::cout << "AA :  " << std::endl << AA << std::endl;
+    // std::cout << "BB :  " << std::endl << BB << std::endl;
+    // std::cout << "gg :  " << std::endl << gg << std::endl;
     Eigen::SparseMatrix<double> BB_sparse = BB.sparseView();
     Eigen::SparseMatrix<double> AA_sparse = AA.sparseView();
     Eigen::SparseMatrix<double> gg_sparse = gg.sparseView();
@@ -286,10 +310,13 @@ class MpcCar {
     Eigen::SparseMatrix<double> Cx = Cx_ * BB_sparse;
     Eigen::SparseMatrix<double> lx = lx_ - Cx_ * AA_sparse * x0_sparse - Cx_ * gg_sparse;
     Eigen::SparseMatrix<double> ux = ux_ - Cx_ * AA_sparse * x0_sparse - Cx_ * gg_sparse;
+
     Eigen::SparseMatrix<double> A_T = A_.transpose();
+
     A_T.middleCols(0, Cx.rows()) = Cx.transpose();
     A_T.middleCols(Cx.rows(), Cu_.rows()) = Cu_.transpose();
     A_ = A_T.transpose();
+
     for (int i = 0; i < lx.rows(); ++i) {
       l_.coeffRef(i, 0) = lx.coeff(i, 0);
       u_.coeffRef(i, 0) = ux.coeff(i, 0);
