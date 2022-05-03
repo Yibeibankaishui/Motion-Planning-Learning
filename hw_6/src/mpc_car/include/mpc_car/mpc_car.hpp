@@ -62,7 +62,7 @@ class MpcCar {
     Ad_.coeffRef(0, 3) = cos(phi) * dt_;
     Ad_.coeffRef(1, 2) = v * cos(phi) * dt_;
     Ad_.coeffRef(1, 3) = sin(phi) * dt_;
-    Ad_.coeffRef(2, 3) = tan(delta) / ll_;
+    Ad_.coeffRef(2, 3) = dt_ * tan(delta) / ll_;
 
     // Bd = dt * Bc
     Bd_.coeffRef(2, 1) = dt_ * v / (ll_ * (pow(cos(delta), 2)));
@@ -191,8 +191,9 @@ class MpcCar {
       uu_.coeffRef(i * 3 + 1, 0) = delta_max_;
       // ddelta
       Cu_.coeffRef(i * 3 + 2, i * m + 1) = 1;
-      // lu_.coeffRef(i * 3 + 2, 0) = -ddelta_max_ * dt_;
-      // uu_.coeffRef(i * 3 + 2, 0) = ddelta_max_ * dt_;
+      if (i > 0) { Cu_.coeffRef(i * 3 + 2, (i - 1) * m + 1) = -1;}
+      lu_.coeffRef(i * 3 + 2, 0) = -ddelta_max_ * dt_;
+      uu_.coeffRef(i * 3 + 2, 0) = ddelta_max_ * dt_;
 
       // TODO: set stage constraints of states (v)
       // -v_max <= v <= v_max
