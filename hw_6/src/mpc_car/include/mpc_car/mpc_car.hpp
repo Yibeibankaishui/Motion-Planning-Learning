@@ -116,9 +116,14 @@ class MpcCar {
   }
 
   VectorX compensateDelay(const VectorX& x0) {
-    VectorX x0_delay = x0;
     // TODO: compensate delay
-    // ...
+    VectorX x0_delay = x0;
+    double dt = 0.001;
+    for (double t = delay_; t > 0; t -= dt) {
+      int i = std::ceil(t / dt_);
+      VectorU input = historyInput_[history_length_ - i];
+      step(x0_delay, input, dt);
+    }
     return x0_delay;
   }
 
@@ -218,6 +223,7 @@ class MpcCar {
     historyInput_.push_back(predictInput_.front());
     lu_.coeffRef(2, 0) = predictInput_.front()(1) - ddelta_max_ * dt_;
     uu_.coeffRef(2, 0) = predictInput_.front()(1) + ddelta_max_ * dt_;
+
     VectorX x0 = compensateDelay(x0_observe_);
     // set BB, AA, gg
     Eigen::MatrixXd BB, AA, gg;
