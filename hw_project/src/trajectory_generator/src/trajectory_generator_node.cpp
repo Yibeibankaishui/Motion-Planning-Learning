@@ -98,6 +98,7 @@ void printState() {
   cout << "[Clock]: state: " + state_str[int(exec_state)] << endl;
 }
 
+// get odom readings
 void rcvOdomCallback(const nav_msgs::Odometry::ConstPtr &odom) {
   odom_pt(0) = odom->pose.pose.position.x;
   odom_pt(1) = odom->pose.pose.position.y;
