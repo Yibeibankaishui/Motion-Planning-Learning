@@ -142,6 +142,7 @@ void execCallback(const ros::TimerEvent &e) {
     break;
   }
 
+  // generate traj
   case GEN_NEW_TRAJ: {
     bool success = trajGeneration();
     if (success)
@@ -172,6 +173,8 @@ void execCallback(const ros::TimerEvent &e) {
     }
     break;
   }
+  
+  // generate traj
   case REPLAN_TRAJ: {
     ros::Time time_now = ros::Time::now();
     double t_cur = (time_now - time_traj_start).toSec();
@@ -318,6 +321,7 @@ void trajOptimization(Eigen::MatrixXd path) {
   visTrajectory(_polyCoeff, _polyTime);
 }
 
+// publish trajectory
 void trajPublish(MatrixXd polyCoeff, VectorXd time) {
   if (polyCoeff.size() == 0 || time.size() == 0) {
     ROS_WARN("[trajectory_generator_waypoint] empty trajectory, nothing to "
