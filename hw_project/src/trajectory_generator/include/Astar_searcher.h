@@ -8,6 +8,33 @@
 #include "backward.hpp"
 #include "node.h"
 
+
+enum HeuFunc {
+	Manhattan,
+	Euclidean,
+	DiagonalHeu,
+	Dijkstra
+};
+
+
+struct HeuValue{
+	double gValue;
+	double hValue;
+	double fValue;
+
+	HeuValue(){}
+	HeuValue(double g, double h) : gValue(g), hValue(h) {fValue = g + h;}
+	HeuValue(const GridNodePtr & node){
+		gValue = node -> gScore;
+		hValue = node -> fScore;
+		fValue = gValue + hValue;
+	}
+
+	bool operator== (HeuValue & rhs) const{
+		return ( (gValue == rhs.gValue) && (fValue == rhs.fValue) );
+	}
+};
+
 class AstarPathFinder
 {	
 	private:
