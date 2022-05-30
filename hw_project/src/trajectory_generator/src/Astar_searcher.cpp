@@ -245,8 +245,12 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt) {
 
   startPtr->id = 1;
   startPtr->coord = start_pt;
-  openSet.insert(make_pair(startPtr->fScore, startPtr));
-
+#if _use_tie_breaker
+  HeuValue hvalue(startPtr);
+  openSet.insert( make_pair(hvalue, startPtr));
+#else
+  openSet.insert( make_pair(startPtr -> fScore, startPtr) );
+#endif
   /**
    *
    * STEP 1.2:  some else preparatory works which should be done before while
