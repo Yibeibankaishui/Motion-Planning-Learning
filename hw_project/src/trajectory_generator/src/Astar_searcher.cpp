@@ -286,7 +286,21 @@ vector<Vector3d> AstarPathFinder::getPath() {
    * STEP 1.4:  trace back the found path
    *
    * **/
+  GridNodePtr prevPtr = terminatePtr;
+    while (prevPtr != NULL){
+        // ROS_INFO("[%f , %f , %f]  (%d, %d, %d)", prevPtr->coord(0), prevPtr->coord(1), prevPtr->coord(2), 
+        //             prevPtr->index(0), prevPtr->index(1), prevPtr->index(2));
+        gridPath.push_back(prevPtr);
+        prevPtr = prevPtr -> cameFrom;
+        
+    }
+    for (auto ptr: gridPath){
 
+        
+        path.push_back(ptr->coord);
+    }
+        
+    reverse(path.begin(),path.end());
   return path;
 }
 
