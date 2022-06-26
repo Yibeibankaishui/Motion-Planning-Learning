@@ -174,9 +174,41 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr,
 
 double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2) {
   // using digonal distance and one type of tie_breaker.
-  double h;
+    double h = 0;
+    switch(heu){
+        case Manhattan:
+            // Manhattan
+            res = abs (node1 -> coord(0) - node2 -> coord(0)) + 
+            abs (node1 -> coord(1) - node2 -> coord(1)) + 
+            abs (node1 -> coord(2) - node2 -> coord(2));
+            break;
+        case Euclidean:
+            // Euclidean
+            res = sqrt( pow ( (node1 -> coord(0) - node2 -> coord(0)), 2) + 
+            pow ( (node1 -> coord(1) - node2 -> coord(1)), 2) + 
+            pow ( (node1 -> coord(2) - node2 -> coord(2)), 2) );
+            break;
+        case DiagonalHeu:
+            // Diagonal Heuristic
+            {
+            double dx = abs (node1 -> coord(0) - node2 -> coord(0));
+            double dy = abs (node1 -> coord(1) - node2 -> coord(1));
+            double dz = abs (node1 -> coord(2) - node2 -> coord(2));
+            double dmin = min ( min (dx, dy), dz);
+            double dmax = max ( max (dx, dy), dz);
+            double dmid = dx + dy + dz - dmin - dmax;
 
-  return h;
+            res = (1.7321 - 1.4142) * dmin + (1.4142 - 1) * dmid + dmax;
+            break;
+            }
+        case Dijkstra:
+            res = 0;
+            break;
+        default:
+            break;
+        
+    }
+    return h;
 }
 
 void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt) {
@@ -213,8 +245,12 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt) {
 
   startPtr->id = 1;
   startPtr->coord = start_pt;
-  openSet.insert(make_pair(startPtr->fScore, startPtr));
-
+#if _use_tie_breaker
+  HeuValue hvalue(startPtr);
+  openSet.insert( make_pair(hvalue, startPtr));
+#else
+  openSet.insert( make_pair(startPtr -> fScore, startPtr) );
+#endif
   /**
    *
    * STEP 1.2:  some else preparatory works which should be done before while
@@ -250,7 +286,21 @@ vector<Vector3d> AstarPathFinder::getPath() {
    * STEP 1.4:  trace back the found path
    *
    * **/
+  GridNodePtr prevPtr = terminatePtr;
+    while (prevPtr != NULL){
+        // ROS_INFO("[%f , %f , %f]  (%d, %d, %d)", prevPtr->coord(0), prevPtr->coord(1), prevPtr->coord(2), 
+        //             prevPtr->index(0), prevPtr->index(1), prevPtr->index(2));
+        gridPath.push_back(prevPtr);
+        prevPtr = prevPtr -> cameFrom;
+        
+    }
+    for (auto ptr: gridPath){
 
+        
+        path.push_back(ptr->coord);
+    }
+        
+    reverse(path.begin(),path.end());
   return path;
 }
 
